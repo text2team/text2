@@ -1,1 +1,983 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text2 - Trợ lý AI & Công nghệ hàng đầu Việt Nam</title>
+  <link rel="icon" href="favicon.ico">
+  <style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh; 
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+    color: #ffffff;
+  }
 
+  .popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #0f0f0f;
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+
+  .popup.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  header {
+    background: rgba(33, 37, 41, 0.95);
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    flex-shrink: 0;
+    border-bottom: 1px solid #444;
+    height: 40px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .taskbar-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-right: 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    z-index: 10001;
+  }
+  .sidebar-toggle:hover {
+    background: rgba(255,255,255,0.08);
+  }
+  .sidebar-toggle svg {
+    width: 24px;
+    height: 24px;
+    color: #fff;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background: linear-gradient(135deg, #191919 80%, #23272a 100%);
+    box-shadow: 2px 0 16px rgba(0,0,0,0.5);
+    z-index: 10000;
+    padding: 30px 18px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    transform: translateX(-100%);
+    transition: transform 0.35s cubic-bezier(.4,2,.6,1), box-shadow 0.2s;
+  }
+  .sidebar.active {
+    transform: translateX(0);
+    box-shadow: 2px 0 24px rgba(0,0,0,0.7);
+  }
+  .sidebar .sidebar-close {
+    align-self: flex-end;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .sidebar .sidebar-close:hover {
+    background: rgba(255,255,255,0.08);
+  }
+  .sidebar a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 10px 0 10px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    display: block;
+  }
+  .sidebar a:hover {
+    background: rgba(255,255,255,0.08);
+  }
+  @media (max-width: 600px) {
+    .sidebar {
+      width: 80vw;
+      min-width: 0;
+      padding: 20px 8px 8px 8px;
+    }
+  }
+
+  .start-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  .start-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .start-button img {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+  }
+
+  .start-button span {
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .taskbar-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .taskbar-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  .taskbar-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .clock {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    font-family: 'Consolas', monospace;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    header {
+      padding: 8px 10px;
+      height: 35px;
+    }
+    
+    .start-button span {
+      display: none;
+    }
+    
+    .taskbar-right {
+      gap: 8px;
+    }
+  }
+
+  nav {
+    background: linear-gradient(to right, #1a1a1a, #2a2a2a);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    border-bottom: 1px solid #333;
+    position: sticky;
+    top: 40px;
+    z-index: 999;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  nav a {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  nav a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  nav a:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+
+  nav a:hover::before {
+    opacity: 1;
+  }
+
+  nav a:active {
+    transform: translateY(0);
+  }
+
+  nav a svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.8;
+    flex-shrink: 0;
+  }
+
+  .search-container {
+    text-align: center;
+    margin: 15px auto;
+    flex-shrink: 0;
+    max-width: 800px;
+    width: 90%;
+  }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .search-button {
+    background: linear-gradient(145deg, #343a40, #23272a);
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+  }
+
+  .search-button:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(145deg, #3d4449, #2a2f33);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .search-button:active {
+    transform: translateY(0);
+  }
+
+  .search-button svg {
+    width: 20px;
+    height: 20px;
+    color: #fff;
+  }
+
+  .popup-title {
+    text-align: center;
+    font-size: 17px;
+    font-weight: 700;
+    background: rgba(33, 37, 41, 0.8);
+    padding: 10px 25px;
+    margin: 25px auto 15px;
+    border-radius: 20px;
+    width: fit-content;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+  }
+
+  .icon-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    flex-grow: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 90%;
+  }
+
+  .icon {
+    text-align: center;
+    text-decoration: none;
+    background: linear-gradient(145deg, #292929, #1f1f1f);
+    padding: 15px 10px;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    color: #ffffff;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+    transform: rotate(25deg);
+    pointer-events: none;
+  }
+
+  .icon p {
+    font-size: 12px;
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    padding: 0 5px;
+  }
+
+  .icon:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.9);
+    background: linear-gradient(145deg, #343a40, #23272a);
+  }
+
+  .icon img {
+    width: 70px;
+    height: 70px;
+    border-radius: 15px;
+    object-fit: cover;
+    margin-bottom: 8px;
+    border: 4px solid #343a40;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  }
+
+  footer {
+    background: rgba(33, 37, 41, 0.8);
+    text-align: center;
+    padding: 15px;
+    font-size: 16px;
+    flex-shrink: 0;
+    border-top: 1px solid #444;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.5);
+    position: sticky;
+    bottom: 0;
+    z-index: 999;
+  }
+
+  @media (max-width: 1200px) {
+    .icon-container {
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .search-container {
+      margin: 10px auto;
+    }
+
+    .search-box {
+      max-width: 90%;
+    }
+
+    .search-button {
+      width: 40px;
+      height: 40px;
+    }
+
+    .search-button svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .icon-container {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .icon {
+      padding: 12px;
+    }
+
+    .icon img {
+      width: 50px;
+      height: 50px;
+    }
+
+    .icon p {
+      font-size: 11px;
+      margin-top: 6px;
+      padding: 0 3px;
+    }
+
+    footer {
+      padding: 12px;
+      font-size: 14px;
+    }
+
+    nav {
+      padding: 8px;
+      gap: 10px;
+    }
+
+    nav a {
+      padding: 8px 15px;
+      font-size: 13px;
+    }
+
+    nav a svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .icon-container {
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .icon {
+      padding: 10px;
+    }
+
+    .icon img {
+      width: 45px;
+      height: 45px;
+    }
+
+    .icon p {
+      font-size: 10px;
+      margin-top: 4px;
+      padding: 0 2px;
+    }
+
+    nav a {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    nav a svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  .search-results {
+    margin-top: 15px;
+    padding: 12px;
+    max-width: 90%;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    display: none;
+  }
+
+  .search-results.active {
+    display: block;
+  }
+
+  .search-results p {
+    color: #fff;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .search-results .loading {
+    text-align: center;
+    color: #888;
+  }
+
+  .search-container input[type="text"] {
+    width: 100%;
+    padding: 12px 20px;
+    border-radius: 50px;
+    border: 1px solid #555;
+    outline: none;
+    font-size: 15px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    backdrop-filter: blur(6px);
+    transition: all 0.3s ease;
+  }
+
+  .search-container input[type="text"]:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #888;
+  }
+
+  .mini-popup {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.25);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10001;
+    transition: opacity 0.3s, visibility 0.3s;
+  }
+  .mini-popup.hidden {
+    opacity: 0; visibility: hidden; pointer-events: none;
+  }
+  .mini-popup-content {
+    background: #23272a;
+    color: #fff;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    padding: 28px 32px 18px 32px;
+    min-width: 260px;
+    max-width: 90vw;
+    text-align: center;
+    position: relative;
+    animation: popupIn 0.25s;
+  }
+  .mini-popup-content h3 {
+    margin-top: 0;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .mini-popup-content p {
+    margin: 0 0 18px 0;
+    font-size: 15px;
+  }
+  .mini-popup-close {
+    background: #444; color: #fff;
+    border: none; border-radius: 6px;
+    padding: 7px 18px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+  .mini-popup-close:hover {
+    background: #666;
+  }
+  @keyframes popupIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="popup">
+  <header>
+    <div class="taskbar-left">
+      <button class="sidebar-toggle" id="sidebarToggle" title="Mở menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <div class="start-button">
+        <img src="https://lh3.googleusercontent.com/p/AF1QipMAH2F9BWWLSU14YABENNfSIUDTinGdHOO3wC-S=s1360-w1360-h1020-rw" alt="Logo Text2 - Trợ lý AI, Blog, Công nghệ, Mạng xã hội" />
+        <span>Text2</span>
+      </div>
+    </div>
+    
+    <div class="taskbar-right">
+      <div class="taskbar-icon" title="Notifications">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+      </div>
+      <div class="clock" id="clock">00:00</div>
+      <div class="taskbar-icon" title="Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <a href="#home" data-link="https://www.text2.click/p/404.html">
+      <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      Home
+    </a>
+    <a href="#tools" data-link="https://ads.text2.click">
+      <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+        <line x1="8" y1="21" x2="16" y2="21"></line>
+        <line x1="12" y1="17" x2="12" y2="21"></line>
+      </svg>
+      ADS 
+    </a>
+    <a href="#about" data-link="https://www.youtube.com/@text2_hometech">
+      <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+        <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+      </svg>
+      Youtube 
+    </a>
+    <a href="https://mail.text2.click/" data-link="https://mail.text2.click/">
+      <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+        <polyline points="22,6 12,13 2,6"></polyline>
+      </svg>
+      Contact
+    </a>
+  </nav>
+
+  <div class="search-container">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search and chat with text2..." />
+      <button id="searchButton" class="search-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+    </div>
+    <div id="searchResults" class="search-results"></div>
+  </div>
+
+  <div class="icon-container">
+    <a href="https://chat.text2.click" class="icon">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjQPE-CZKTjptAVHbyxflltCmLfJAhKmSnL24m2u08wRMvY_f8sugYn5FatRD4OQQ4Kral_h-llViqiNNoIqVPHU51Bf8mxAiB2ayTX4nnsFstgmCyi2ZGx-ZEKV5BwDLGEsE1q1FHjT_quMbbrDOhcdzj3jNBjvjH0CVAQw9b58Ro6EGhdI90GSBKoU14/s320/logochatai.png" alt="Chat Ai " />
+      <p>Chat AI</p>
+    </a>
+    <a href="https://podcast.text2.click/" class="icon">
+      <img src="https://i.pinimg.com/736x/10/b5/3d/10b53d42f56094def772153642cd2d95.jpg" alt="podcast " />
+      <p>Podcast </p>
+    </a>
+    <a href="https://m.text2.click/doc.html" class="icon">
+      <img src="https://i.pinimg.com/736x/84/86/d6/8486d629e4d44e88a2e9080f9e8cd6f0.jpg" alt="doc" />
+      <p>Document</p>
+    </a>   
+    <a href="https://m.text2.click/read-file.html" class="icon">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirHw-amtU9jadf52HxiW-Zw4o3T5IfOuUajAloZhvSLtzPzklI6S8Y89kCwGtCuF_ekg-hyDLFLlCPE_iRakYBJqw0h9GaY_g_vj1HcChts3k6CALXbIUJ1IPGgQ0QT-Ihove2OsvrZzEsuElPQLo1s4v5qzWiHDOQGGtRxAtXUSLjiBZuN1oplmlofh4/s320/20250625_1153_Logo%20%C4%90%E1%BB%8Dc%20File%203D_simple_compose_01jyjpxjfae4askxx25xsz9618.png" alt="Contact" />
+      <p>Read all files</p>
+    </a>
+
+    <a href="https://m.text2.click/love-match.html" class="icon">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhr59WsoWtfjTrg2-9lQJJziDTS5JMOZySmaJlCwtsBotB_J-4Ph_E-h5cLG3Wv1TOkP24-Y71zebebUSW23zpu3PcLvnRU3kbA9dMEJbuTIScWdzqREGAhyphenhyphen3d4g_zDtvK70FzMxor8cxvouYvXL0plf2-qzkyeiy32othqt-yX38WGkjzYdg1eTSX-i78/s320/ChatGPT%20Image%2011_55_02%2025%20thg%206,%202025.png" alt="Love fortune telling" />
+      <p>Love Match</p>
+    </a>
+
+    <a href="https://m.text2.click/read.html" class="icon">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg42bUGoJU57Nu4eugkLe7LPZ3lw7mj1UXtA98s-I9zWve_WqJkSWf5EotOgpZ0grU4HLdEPjT9LhfQLzID_zL-VVG6dRBK306XEkuhyxV5lGgsRVwevt4vCJdyYKDKNxUdGARATTVV_MJnhdVVdYROBcoapUwlOjKUoBZKTdT5JEsQ0pyU8imBeO4OmjM/s320/20250614_2256_Logo%203D%20%C4%90%C6%A1n%20Gi%E1%BA%A3n_simple_compose_01jxqje6bze12a787v3hetvgc8.png" alt="Read HTML" />
+      <p>Read HTML</p>
+    </a>
+
+    <a href="https://m.text2.click/sua-loi-chinh-ta.html" class="icon">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi1czQt9tdLYd-fbbiz9_rPmEznqB3b7GBRgmtQv0s0NQhcNJruJUd9UkLPt5ZjHl40W6iyuCFIlJgRn_VXxJn5bd_3kOOnqg-CnUD1YlsEQOrsD9YAPu93DHWxdXGddVl_DVlGhHRTIbJNY-VZsNbOeuH1YfrBTicCSLXmggo-4YOCxE4ojrUezBHx1P8/s320/20250614_2337_Logo%20S%E1%BB%ADa%20L%E1%BB%97i%20Ch%C3%ADnh%20T%E1%BA%A3_simple_compose_01jxqmt3xxf7avrqptaw9e2cv1.png" alt="Sửa lỗi chính tả" />
+      <p>Sửa lỗi chính tả Vietnamese</p>
+    </a>
+
+    <a href="https://m.text2.click/text-correction.html" class="icon">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi1czQt9tdLYd-fbbiz9_rPmEznqB3b7GBRgmtQv0s0NQhcNJruJUd9UkLPt5ZjHl40W6iyuCFIlJgRn_VXxJn5bd_3kOOnqg-CnUD1YlsEQOrsD9YAPu93DHWxdXGddVl_DVlGhHRTIbJNY-VZsNbOeuH1YfrBTicCSLXmggo-4YOCxE4ojrUezBHx1P8/s320/20250614_2337_Logo%20S%E1%BB%ADa%20L%E1%BB%97i%20Ch%C3%ADnh%20T%E1%BA%A3_simple_compose_01jxqmt3xxf7avrqptaw9e2cv1.png" alt="Correct spelling English" />
+      <p>Text correction</p>
+    </a>
+
+    <a href="https://m.text2.click/qr-code.html" class="icon">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi6_fA3f_K5rAFVzxYXkBzCfVtPxS4XOPxYnfTfdA537TeGC2o5eutsbuEU5ahqXZRO81S9FB5tQXmEYiOw_hxNnJuf999GNkCmRtLrZU7LbpTEVhKSpb-ar0icWyAQpjLNcaC-k3qrDmmfO0ub3FrZzIISh_vKH_OY70D7ja-8xJRbzqILk8cFClVtR9E/s320/20250614_2347_Logo%20QR%20Code%203D_simple_compose_01jxqnc68ke9c96hyapmmwc3z2.png" alt="Create QR Code" />
+      <p>Create QR Code</p>
+    </a>
+
+    <a href="https://m.text2.click/img.html" class="icon">
+      <img src="https://pbs.twimg.com/media/GpI7Nb2a4AAcTPE?format=png&name=small" alt="IMG Design" />
+      <p>IMG Design</p>
+    </a>
+
+    <a href="https://img.text2.click/" class="icon">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhJ1SE9lYAi9c0zAHLFizf3vj5ZWHiyDnJoENuXpxUcKa9gjl81CgUm2HEKAcmTUyiWpVwSoQRHJoaCIB7rppnCq6UwrrxIUNipbJEgvENtd5-CxwkdiTaJfPup3Hbm2UALXaEtf1gD323hcQMZqsgufZQqipRqcCoHz10ocBuiHLrCFbxkYHBKgztpEVE/s320/20250625_1159_Logo%203D%20%C4%90%E1%BB%99c%20%C4%90%C3%A1o_simple_compose_01jyjq6x3efrzbhwe6gct7rq1n.png" alt="IMG" />
+      <p>Magic IMG </p>
+    </a>
+    
+    <a href="https://m.text2.click/tts.html" class="icon">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhuN1pFOqmScMfj9krVx6XmYn6iLS2GRUm2WlushYOlNucdlKfzpisRjbFO505d6x_SeJLVvJDuRMpOfqIoIIYBnGr-uKe9gHgupUzkrKpKcCTf6bzrBk2hos0eUqRXQ46TPl-87cTYu-IBa1PnhgY_u-Tvci4jeZVrjWlLPRSTK4hwm75NR0IAo1G-6Pk/s320/Text2%20-%20TTS.jpg" alt="IMG Edit" />
+      <p>Text2 - TTS </p>
+    </a>
+    
+    <a href="https://khetentertainment.com/" class="icon">
+      <img src="https://khetentertainment.com/media/logoc.png" alt="Khet" />
+      <p>Khet</p>
+    </a>
+  </div>
+
+  <footer>
+    © text2 | CEO HÓA NHẬT ANH | mail.text2.click
+  </footer>
+</div>
+
+<!-- Popup Notifications -->
+<div id="notificationPopup" class="mini-popup hidden" tabindex="-1">
+  <div class="mini-popup-content">
+    <h3>Thông báo</h3>
+    <p>Bạn chưa có thông báo mới.</p>
+    <button class="mini-popup-close">Đóng</button>
+  </div>
+</div>
+<!-- Popup Settings -->
+<div id="settingsPopup" class="mini-popup hidden" tabindex="-1">
+  <div class="mini-popup-content">
+    <h3>Cài đặt</h3>
+    <p>Chức năng đang phát triển.<br>Hãy góp ý cho Text2 nhé!</p>
+    <button class="mini-popup-close">Đóng</button>
+  </div>
+</div>
+
+<div class="sidebar hidden" id="sidebar">
+  <button class="sidebar-close" id="sidebarClose" title="Đóng">&times;</button>
+  <a href="#home" onclick="window.open('https://www.text2.click/p/404.html','_blank')">🏠 Home</a>
+  <a href="#tools" onclick="window.open('https://ads.text2.click','_blank')">🛠️ Ads</a>
+  <a href="#about" onclick="window.open('https://www.youtube.com/@text2_hometech','_blank')">📺 Youtube</a>
+  <a href="#contact" onclick="window.open('https://mail.text2.click/','_blank')">✉️ Contact</a>
+  <hr style="border: 0; border-top: 1px solid #333; margin: 10px 0;">
+  <a href="https://khetentertainment.com/" target="_blank">🌐 Khet Entertainment</a>
+</div>
+
+<script>
+  document.querySelectorAll('nav a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      const targetUrl = this.getAttribute('href');
+      if (targetUrl.startsWith('#')) {
+        e.preventDefault();
+        const dataLink = this.getAttribute('data-link');
+        if (dataLink) {
+          window.open(dataLink, '_blank');
+        }
+      }
+    });
+  });
+
+  document.querySelectorAll('.icon').forEach(icon => {
+    icon.addEventListener('click', function(e) {
+      e.preventDefault();
+      const url = this.getAttribute('href');
+      window.open(url, "_blank");
+    });
+  });
+
+  const searchInput = document.getElementById('searchInput');
+  const searchButton = document.getElementById('searchButton');
+  const searchResults = document.getElementById('searchResults');
+  const GEMINI_API_KEY = 'AIzaSyDhqRnOubyuq9G1DcsajtWXgVrqnxFH0So'; 
+
+  const keywordResponses = {
+    "nhật anh": "Nhật Anh là CEO của 504 Media, chuyên về AI, blog, và mạng xã hội. Đúng rồi đó, Nhật Anh đa tài lắm đó!",
+    "504 media": "504 Media là công ty chuyên về công nghệ AI và nội dung số, nơi hội tụ những ý tưởng đỉnh cao!",
+    "tạo ra": "Tớ được tạo ra bởi Hóa Nhật Anh, CEO siêu ngầu của 504 Media và Text2 đó nha! Cậu ấy là người sáng tạo ra tớ đó!",
+    "chào": "Chào bạn iu! Có chuyện gì vui không nè? Kể tui nghe với!",
+    "cảm ơn": "Hihi, không có chi đâu nghen 🫶 Luôn sẵn lòng phục vụ!",
+    "anh tú": "À Anh Tú hả? Sinh viên VTV College và là bạn thân của Nhật Anh luôn đóa! Người này cũng có máu mặt lắm đó nha!",
+    "class": "post.text2.click/class.htnl",
+    "adobe": "Link bản crack Adobe từ 2020 đến 2025 nè: https://www.text2.click/p/ban-crack-adobe.html. Nhớ dùng cẩn thận nha!",
+    "huy hoàng": "Huy Hoàng là ca sĩ sắp nổi đình đám đó! Follow liền nha kẻo lỡ trend!",
+    "ai là bạn": "Mình là trợ lý AI cực chất của Text2 nè 💚 Siêu thông minh và luôn ở đây để giúp bạn!",
+  };
+
+  async function performSearch() {
+    const query = searchInput.value.trim().toLowerCase();
+    
+    if (query.length < 2) {
+      searchResults.innerHTML = '<p>Please enter at least 2 characters to search</p>';
+      searchResults.classList.add('active');
+      return;
+    }
+
+    searchResults.innerHTML = '<p class="loading">Đang tìm kiếm...</p>';
+    searchResults.classList.add('active');
+
+    for (const [keyword, response] of Object.entries(keywordResponses)) {
+      if (query.includes(keyword)) {
+        searchResults.innerHTML = `<p>${response}</p>`;
+        return;
+      }
+    }
+
+    try {
+      const formattedMessage = `trả lời ngắn gọn dưới 700 ký tự và trả lời dự theo ngôn ngữ người dùng, trả lời theo hướng ngôi thứ nhất xưng hộ tên text2, thêm text2 khi trò chuyện : ${query}`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: formattedMessage }]
+          }]
+        })
+      });
+
+      const data = await response.json();
+      let botReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Oops, chưa hiểu câu nè 😅 Cậu hỏi lại xíu được không?";
+      botReply = botReply.replace(/Gemini|Google/g, "Text2");
+      botReply = botReply.replace(/\*+/g, ""); 
+      
+      searchResults.innerHTML = `<p>${botReply}</p>`;
+    } catch (error) {
+      console.error('Search error:', error);
+      searchResults.innerHTML = '<p>Có lỗi xảy ra khi tìm kiếm. Vui lòng thử lại sau. :(</p>';
+    }
+  }
+
+  searchButton.addEventListener('click', performSearch);
+
+  searchInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      performSearch();
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target) && !searchButton.contains(e.target)) {
+      searchResults.classList.remove('active');
+    }
+  });
+
+  function updateClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // --- Mini popup logic for notifications and settings ---
+  const notificationBtn = document.querySelector('.taskbar-icon[title="Notifications"]');
+  const settingsBtn = document.querySelector('.taskbar-icon[title="Settings"]');
+  const notificationPopup = document.getElementById('notificationPopup');
+  const settingsPopup = document.getElementById('settingsPopup');
+  const miniPopupCloses = document.querySelectorAll('.mini-popup-close');
+
+  function openMiniPopup(popup) {
+    popup.classList.remove('hidden');
+    popup.focus();
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMiniPopup(popup) {
+    popup.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+  notificationBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    openMiniPopup(notificationPopup);
+  });
+  settingsBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    openMiniPopup(settingsPopup);
+  });
+  miniPopupCloses.forEach(btn => {
+    btn.addEventListener('click', function() {
+      closeMiniPopup(this.closest('.mini-popup'));
+    });
+  });
+  // Đóng popup khi click ra ngoài
+  document.addEventListener('mousedown', function(e) {
+    [notificationPopup, settingsPopup].forEach(popup => {
+      if (!popup.classList.contains('hidden') && !popup.querySelector('.mini-popup-content').contains(e.target)) {
+        closeMiniPopup(popup);
+      }
+    });
+  });
+  // Đóng popup khi nhấn ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      [notificationPopup, settingsPopup].forEach(popup => {
+        if (!popup.classList.contains('hidden')) closeMiniPopup(popup);
+      });
+    }
+  });
+</script>
+<script>
+  // Sidebar logic
+  const sidebar = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const sidebarClose = document.getElementById('sidebarClose');
+
+  function openSidebar() {
+    sidebar.classList.add('active');
+    sidebar.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('active');
+    setTimeout(() => sidebar.classList.add('hidden'), 300);
+    document.body.style.overflow = '';
+  }
+  sidebarToggle.addEventListener('click', openSidebar);
+  sidebarClose.addEventListener('click', closeSidebar);
+  // Đóng sidebar khi click ra ngoài
+  document.addEventListener('mousedown', function(e) {
+    if (sidebar.classList.contains('active') && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+      closeSidebar();
+    }
+  });
+  // Đóng sidebar khi nhấn phím ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+      closeSidebar();
+    }
+  });
+</script>
+</body>
+</html>
