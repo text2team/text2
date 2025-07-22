@@ -130,53 +130,68 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 260px;
+    width: 270px;
     height: 100vh;
-    background: linear-gradient(135deg, #191919 80%, #23272a 100%);
-    box-shadow: 2px 0 16px rgba(0,0,0,0.5);
+    background: linear-gradient(135deg, #191c24 80%, #23272a 100%);
+    box-shadow: 2px 0 24px rgba(0,0,0,0.7);
     z-index: 10000;
-    padding: 30px 18px 18px 18px;
+    padding: 28px 18px 18px 18px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 6px;
+    border-top-right-radius: 18px;
+    border-bottom-right-radius: 18px;
     transform: translateX(-100%);
     transition: transform 0.35s cubic-bezier(.4,2,.6,1), box-shadow 0.2s;
   }
   .sidebar.active {
     transform: translateX(0);
-    box-shadow: 2px 0 24px rgba(0,0,0,0.7);
+    box-shadow: 2px 0 32px rgba(0,0,0,0.85);
+  }
+  .sidebar .sidebar-header {
+    margin-bottom: 18px;
   }
   .sidebar .sidebar-close {
-    align-self: flex-end;
-    background: none;
+    background: rgba(255,255,255,0.07);
     border: none;
-    color: #fff;
-    font-size: 22px;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    transition: background 0.2s;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    outline: none;
   }
   .sidebar .sidebar-close:hover {
-    background: rgba(255,255,255,0.08);
+    background: #4fc3f7;
+    box-shadow: 0 4px 16px rgba(79,195,247,0.15);
   }
   .sidebar a {
     color: #fff;
     text-decoration: none;
     font-size: 16px;
-    padding: 10px 0 10px 8px;
-    border-radius: 6px;
-    transition: background 0.2s;
-    display: block;
+    padding: 10px 0 10px 10px;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
   }
   .sidebar a:hover {
-    background: rgba(255,255,255,0.08);
+    background: rgba(79,195,247,0.12);
+    color: #4fc3f7;
   }
   @media (max-width: 600px) {
     .sidebar {
-      width: 80vw;
+      width: 85vw;
       min-width: 0;
-      padding: 20px 8px 8px 8px;
+      padding: 18px 8px 8px 8px;
+      border-top-right-radius: 12px;
+      border-bottom-right-radius: 12px;
     }
   }
 
@@ -807,7 +822,7 @@
       </span>
       <span style="font-size: 14px; color: #b0b0b0;">
         <span style="margin-right: 10px;">👤 CEO: <b>Hoa Nhat Anh</b></span>
-        <span style="margin-left: 10px;">📧 <a href="mailto:mail@text2.click" style="color:#4fc3f7; text-decoration:underline;">mail@text2.click</a></span>
+        <span style="margin-left: 10px;">📧 <a href="mailto:mail@text2.click" style="color:#4fc3f7; text-decoration:underline;">team@text2.click</a></span>
       </span>
     </div>
   </footer>
@@ -831,13 +846,21 @@
 </div>
 
 <div class="sidebar hidden" id="sidebar">
-  <button class="sidebar-close" id="sidebarClose" title="Close">&times;</button>
-  <a href="#home" onclick="window.open('https://www.text2.click/p/404.html','_blank')">🏠 Home</a>
-  <a href="#tools" onclick="window.open('https://ads.text2.click','_blank')">🛠️ Ads</a>
-  <a href="#about" onclick="window.open('https://www.youtube.com/@text2_hometech','_blank')">📺 Youtube</a>
-  <a href="#contact" onclick="window.open('https://mail.text2.click/','_blank')">✉️ Contact</a>
-  <hr style="border: 0; border-top: 1px solid #333; margin: 10px 0;">
-  <a href="https://khetentertainment.com/" target="_blank">🌐 Khet Entertainment</a>
+  <div class="sidebar-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img src="/favicon.ico" alt="Text2 Logo" style="width:36px;height:36px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.2);background:#23272a;" />
+      <span style="font-weight:700;font-size:18px;letter-spacing:0.5px;color:#4fc3f7;">Text2</span>
+    </div>
+    <button class="sidebar-close" id="sidebarClose" title="Close" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.07);border:none;border-radius:50%;cursor:pointer;transition:background 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>
+  <a href="#home" onclick="window.open('https://www.text2.click/p/404.html','_blank')" style="display:flex;align-items:center;gap:10px;padding:10px 0 10px 10px;font-size:16px;border-radius:8px;transition:background 0.2s;"><span style="font-size:18px;">🏠</span> Home</a>
+  <a href="#tools" onclick="window.open('https://ads.text2.click','_blank')" style="display:flex;align-items:center;gap:10px;padding:10px 0 10px 10px;font-size:16px;border-radius:8px;transition:background 0.2s;"><span style="font-size:18px;">🛠️</span> Ads</a>
+  <a href="#about" onclick="window.open('https://www.youtube.com/@text2_hometech','_blank')" style="display:flex;align-items:center;gap:10px;padding:10px 0 10px 10px;font-size:16px;border-radius:8px;transition:background 0.2s;"><span style="font-size:18px;">📺</span> Youtube</a>
+  <a href="#contact" onclick="window.open('https://mail.text2.click/','_blank')" style="display:flex;align-items:center;gap:10px;padding:10px 0 10px 10px;font-size:16px;border-radius:8px;transition:background 0.2s;"><span style="font-size:18px;">✉️</span> Contact</a>
+  <hr style="border: 0; border-top: 1.5px solid #333; margin: 16px 0;">
+  <a href="https://khetentertainment.com/" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 0 10px 10px;font-size:16px;border-radius:8px;transition:background 0.2s;"><span style="font-size:18px;">🌐</span> Khet Entertainment</a>
 </div>
 
 <script>
